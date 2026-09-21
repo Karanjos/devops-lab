@@ -39,7 +39,7 @@ class OrderServiceTest {
         when(publisher.getIfAvailable()).thenReturn(null);
         when(repository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Order order = service.create(new CreateOrderRequest("Asha", "Widget", 2));
+        Order order = service.create(new CreateOrderRequest("Asha", "Widget", 2, "Please gift wrap"));
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.PROCESSED);
     }
@@ -50,7 +50,7 @@ class OrderServiceTest {
         when(publisher.getIfAvailable()).thenReturn(kafka);
         when(repository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Order order = service.create(new CreateOrderRequest("Asha", "Widget", 2));
+        Order order = service.create(new CreateOrderRequest("Asha", "Widget", 2, "Please gift wrap"));
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CREATED);
         verify(kafka).publishCreated(order);
@@ -59,7 +59,7 @@ class OrderServiceTest {
     @Test
     void processMarksOrderProcessedAndPublishesResult() {
         OrderEventPublisher kafka = mock(OrderEventPublisher.class);
-        Order order = new Order("Asha", "Widget", 2);
+        Order order = new Order("Asha", "Widget", 2, "Please gift wrap");
         when(repository.findById(order.getId())).thenReturn(Optional.of(order));
         when(repository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
         when(publisher.getIfAvailable()).thenReturn(kafka);
@@ -72,7 +72,7 @@ class OrderServiceTest {
 
     @Test
     void processIsIdempotent() {
-        Order order = new Order("Asha", "Widget", 2);
+        Order order = new Order("Asha", "Widget", 2, "Please gift wrap");
         order.markProcessed();
         when(repository.findById(order.getId())).thenReturn(Optional.of(order));
 

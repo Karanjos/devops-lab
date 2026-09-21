@@ -26,7 +26,7 @@ public class OrderService {
     public Order create(CreateOrderRequest request) {
         // Saved in its own transaction, so the row is committed BEFORE the event is published
         // and the consumer can always find it. (Production answer: the transactional outbox pattern.)
-        Order order = repository.save(new Order(request.customer(), request.item(), request.quantity()));
+        Order order = repository.save(new Order(request.customer(), request.item(), request.quantity(), request.notes()));
 
         OrderEventPublisher kafka = publisher.getIfAvailable();
         if (kafka != null) {
