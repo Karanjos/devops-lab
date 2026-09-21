@@ -26,6 +26,9 @@ public class Order {
     @Column(nullable = false)
     private int quantity;
 
+    @Column(nullable = true)
+    private String notes;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
@@ -40,10 +43,15 @@ public class Order {
     }
 
     public Order(String customer, String item, int quantity) {
+        this(customer, item, quantity,null);
+    }
+
+    public Order(String customer, String item, int quantity, String notes) {
         this.id = UUID.randomUUID();
         this.customer = customer;
         this.item = item;
         this.quantity = quantity;
+        this.notes = notes;
         this.status = OrderStatus.CREATED;
         this.createdAt = Instant.now();
     }
@@ -57,6 +65,7 @@ public class Order {
     public String getCustomer() { return customer; }
     public String getItem() { return item; }
     public int getQuantity() { return quantity; }
+    public String getNotes() { return notes; }
     public OrderStatus getStatus() { return status; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getProcessedAt() { return processedAt; }

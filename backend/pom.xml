@@ -12,6 +12,15 @@
     <relativePath/>
   </parent>
 
+  <profiles>
+    <profile>
+      <id>fast</id>
+      <properties>
+        <skipTests>true</skipTests>
+      </properties>
+    </profile>
+  </profiles>
+
   <groupId>com.devopslab</groupId>
   <artifactId>orders-api</artifactId>
   <version>0.1.0-SNAPSHOT</version>

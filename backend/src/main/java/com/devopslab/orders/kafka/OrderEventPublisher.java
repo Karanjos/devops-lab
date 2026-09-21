@@ -34,6 +34,7 @@ public class OrderEventPublisher {
         event.put("customer", order.getCustomer());
         event.put("item", order.getItem());
         event.put("quantity", order.getQuantity());
+        event.put("notes", order.getNotes());   
         send(KafkaTopics.ORDERS_CREATED, order, event);
     }
 
@@ -53,13 +54,15 @@ public class OrderEventPublisher {
                 field("string", "item"),
                 field("int32", "quantity"),
                 field("string", "status"),
-                field("string", "processed_at")));
+                field("string", "processed_at"),
+                field("string", "notes")));
 
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("id", order.getId().toString());
         payload.put("customer", order.getCustomer());
         payload.put("item", order.getItem());
         payload.put("quantity", order.getQuantity());
+        payload.put("notes", order.getNotes()); 
         payload.put("status", order.getStatus().name());
         payload.put("processed_at", String.valueOf(order.getProcessedAt()));
 
