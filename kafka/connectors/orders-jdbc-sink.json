@@ -1,0 +1,20 @@
+{
+  "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+  "tasks.max": "1",
+  "topics": "orders.processed",
+
+  "connection.url": "jdbc:postgresql://postgres:5432/orders",
+  "connection.user": "orders",
+  "connection.password": "orders",
+
+  "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "value.converter.schemas.enable": "true",
+
+  "insert.mode": "upsert",
+  "pk.mode": "record_value",
+  "pk.fields": "id",
+  "table.name.format": "orders_report",
+  "auto.create": "true",
+  "auto.evolve": "true"
+}

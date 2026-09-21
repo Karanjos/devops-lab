@@ -1,0 +1,157 @@
+:root {
+  --paper: #eef1f0;
+  --ink: #14232b;
+  --ink-soft: #52646c;
+  --line: #c4cfd1;
+  --field: #ffffff;
+  --signal: #0e7c86;
+  --signal-ink: #ffffff;
+  --waiting: #b86e00;
+  --alert: #a62b2b;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Instrument Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+h1, h2 { margin: 0; line-height: 1.15; letter-spacing: -0.01em; }
+h1 { font-size: 2.25rem; font-weight: 650; }
+h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.25rem; }
+
+:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+
+.page { max-width: 62rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding-bottom: 1.25rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 2px solid var(--ink);
+}
+
+.status { margin: 0; font-size: 0.9375rem; color: var(--ink-soft); }
+.status::before {
+  content: '';
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: var(--signal);
+}
+.status.down { color: var(--alert); }
+.status.down::before { background: var(--alert); }
+
+.banner {
+  margin: 0 0 2rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--alert);
+  background: #f6e3e3;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(16rem, 20rem) 1fr;
+  gap: 3.5rem;
+  align-items: start;
+}
+
+/* ---- form ---- */
+.form { display: grid; gap: 1rem; }
+.form h2 { margin-bottom: 0.25rem; }
+label { display: grid; gap: 0.35rem; font-size: 0.9375rem; font-weight: 550; }
+input {
+  font: inherit;
+  font-weight: 400;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+}
+input:hover { border-color: var(--ink-soft); }
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 4px;
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: #223843; }
+button:disabled { opacity: 0.6; cursor: progress; }
+.error { margin: 0; color: var(--alert); font-size: 0.9375rem; }
+
+/* ---- orders ---- */
+.orders { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.orders li {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(12rem, 16rem);
+  gap: 1rem 2rem;
+  align-items: center;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.what { display: grid; gap: 0.15rem; }
+.item { font-size: 1.125rem; font-weight: 600; overflow-wrap: anywhere; }
+.qty { color: var(--signal); margin-right: 0.15rem; }
+.who { font-size: 0.875rem; color: var(--ink-soft); }
+.empty { margin: 0; padding: 1.25rem 0; color: var(--ink-soft); border-top: 1px solid var(--line); max-width: 34rem; }
+
+/* The pipeline track: the one memorable element. It fills when Kafka has delivered the result. */
+.track { display: grid; gap: 0.4rem; }
+.track-line { display: flex; align-items: center; }
+.node {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  flex: none;
+}
+.node.on { border-color: var(--signal); background: var(--signal); }
+.is-waiting .node:last-child { border-color: var(--waiting); }
+.rail { position: relative; flex: 1; height: 2px; background: var(--line); overflow: hidden; }
+.rail-fill { position: absolute; inset: 0; background: var(--signal); transform: scaleX(0); transform-origin: left; }
+.is-done .rail-fill { transform: scaleX(1); transition: transform 400ms ease-out; }
+.is-waiting .rail-fill {
+  background: var(--waiting);
+  width: 35%;
+  transform: none;
+  animation: travel 1.4s ease-in-out infinite;
+}
+@keyframes travel {
+  from { left: -35%; }
+  to { left: 100%; }
+}
+.track-labels { display: flex; justify-content: space-between; font-size: 0.8125rem; color: var(--ink-soft); }
+.is-waiting .track-labels span:last-child { color: var(--waiting); font-weight: 600; }
+.is-done .track-labels span:last-child { color: var(--signal); font-weight: 600; }
+
+@media (max-width: 52rem) {
+  .layout { grid-template-columns: 1fr; gap: 2.5rem; }
+  .orders li { grid-template-columns: 1fr; }
+  h1 { font-size: 1.85rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-waiting .rail-fill { animation: none; left: 0; width: 50%; }
+  .is-done .rail-fill { transition: none; }
+}

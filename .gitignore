@@ -1,0 +1,21 @@
+# build output
+target/
+node_modules/
+dist/
+
+# secrets and local state: never commit these
+.env
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!*.tfvars.example
+ansible/**/vault-pass*
+*.pem
+*.key
+
+# editors / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
