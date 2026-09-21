@@ -13,6 +13,10 @@ dist/
 ansible/**/vault-pass*
 *.pem
 *.key
+# GCP service-account keys and credentials
+*-key.json
+credentials*.json
+application_default_credentials.json
 
 # editors / OS
 .idea/
