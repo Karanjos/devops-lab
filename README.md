@@ -3,7 +3,7 @@
 A small but realistic app whose real purpose is to give every DevOps tool a genuine job to do.
 
 **Skills practised:** Linux, shell scripting, Maven, Docker, Nginx, Tomcat, Kafka + Kafka Connect,
-Terraform, Ansible, Jenkins, Kubernetes, Azure.
+Terraform, Ansible, Jenkins, Kubernetes, Google Cloud (GCP).
 
 ## What the app does
 
@@ -21,22 +21,22 @@ Browser ──> Nginx ──> Tomcat (Spring Boot WAR) ──> PostgreSQL   (ord
 2. The API saves it (`CREATED`) and publishes `orders.created` to Kafka. It replies `202 Accepted`.
 3. A Kafka consumer picks it up, marks it `PROCESSED`, and publishes `orders.processed`.
 4. Kafka Connect's JDBC sink copies `orders.processed` into a `orders_report` table, with no code.
-5. The UI polls and shows each order moving from *Received* to *Processed*.
+5. The UI polls and shows each order moving from _Received_ to _Processed_.
 
 ## Repo layout
 
-| Path | What lives there | Phase |
-|---|---|---|
-| `backend/` | Spring Boot 3.5, Java 21, Maven, WAR + Tomcat Dockerfile | 1, 2 |
-| `frontend/` | React (Vite), Nginx config template, Dockerfile | 1, 2 |
-| `kafka/` | Kafka Connect image and connector definitions | 2 |
-| `docker-compose.yml` | The whole stack locally | 2 |
-| `scripts/` | Shell scripts (starts with `smoke-test.sh`) | 3 |
-| `terraform/` | Azure infrastructure | 4, 7 |
-| `ansible/` | Server configuration | 5 |
-| `Jenkinsfile` | CI/CD pipeline (added in Phase 6) | 6, 8 |
-| `k8s/` | Helm chart / manifests for AKS | 7 |
-| `docs/` | One lab guide per phase, **start with `00-roadmap.md`** | all |
+| Path                 | What lives there                                         | Phase |
+| -------------------- | -------------------------------------------------------- | ----- |
+| `backend/`           | Spring Boot 3.5, Java 21, Maven, WAR + Tomcat Dockerfile | 1, 2  |
+| `frontend/`          | React (Vite), Nginx config template, Dockerfile          | 1, 2  |
+| `kafka/`             | Kafka Connect image and connector definitions            | 2     |
+| `docker-compose.yml` | The whole stack locally                                  | 2     |
+| `scripts/`           | Shell scripts (starts with `smoke-test.sh`)              | 3     |
+| `terraform/`         | GCP infrastructure                                       | 4, 7  |
+| `ansible/`           | Server configuration                                     | 5     |
+| `Jenkinsfile`        | CI/CD pipeline (added in Phase 6)                        | 6, 8  |
+| `k8s/`               | Helm chart / manifests for GKE                           | 7     |
+| `docs/`              | One lab guide per phase, **start with `00-roadmap.md`**  | all   |
 
 ## Quick start (needs Docker with Compose, and `jq` for the smoke test)
 
@@ -51,14 +51,14 @@ Prefer to build up gradually? Follow [`docs/phase-1-app-and-maven.md`](docs/phas
 
 ## Ports
 
-| Port | Service |
-|---|---|
-| 8080 | Nginx (the UI and `/api`) |
-| 8081 | Tomcat directly (debugging) |
-| 5432 | PostgreSQL |
+| Port  | Service                                                       |
+| ----- | ------------------------------------------------------------- |
+| 8080  | Nginx (the UI and `/api`)                                     |
+| 8081  | Tomcat directly (debugging)                                   |
+| 5432  | PostgreSQL                                                    |
 | 29092 | Kafka, for tools on your laptop (containers use `kafka:9092`) |
-| 8083 | Kafka Connect REST API |
-| 5173 | Vite dev server (Phase 1 only) |
+| 8083  | Kafka Connect REST API                                        |
+| 5173  | Vite dev server (Phase 1 only)                                |
 
 ## Versions used
 
