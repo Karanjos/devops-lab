@@ -77,3 +77,87 @@ If your remote feature branch contains files that conflict with the new GCP conf
    # Push the synchronized feature branch back up to GitHub
    git push origin feature/existing-remote-branch
    ```
+
+## 3. Setting up the project -
+
+### First we need to run this project from linux os, we will install wsl and then will run 
+
+```bash
+wsl -d Ubuntu -u root
+``` 
+
+then we will change the password for the default user karan_joshi.
+
+```bash
+passwd karan_joshi
+```
+then we will change the user to the wsl -
+
+```bash
+#both command will login the karan_joshi user
+wsl -d Ubuntu -u karan_joshi/ wsl -d Ubuntu
+```
+
+after this we will install the make package.
+
+### Docker fix --
+when getting error for -
+
+```bash
+docker compose up -d postgres
+[+] Running 0/1
+ ⠋ postgres Pulling                                                                                                                                                         0.0s
+error getting credentials - err: fork/exec /usr/bin/docker-credential-desktop.exe: exec format error, out: ``
+```
+we need to disable the credsStore by removing this line from the ~/.docker/config.json but first keep backup of it.
+
+```bash
+cp ~/.docker/config.json ~/.docker/config.json.bkp
+nano ~/.docker/config.json
+```
+
+### If JAVA_HOME is not configure inside the WSL - we need to do this with following steps -
+
+```bash
+   sudo apt update
+   sudo apt install -y openjdk-21-jdk maven
+   echo 'export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64' >> ~/.bashrc
+   source ~/.bashrc
+```
+
+### If we get the error during setting up the frontend as below -
+
+```bash
+karan_joshi@KaranJoshi:/mnt/c/Users/Karan Joshi/Desktop/devops-lab/frontend$npm run dev
+WSL 1 is not supported. Please upgrade to WSL 2 or above.
+Could not determine Node.js install directory
+karan_joshi@KaranJoshi:/mnt/c/Users/Karan Joshi/Desktop/devops-lab/frontend$ cd ..
+karan_joshi@KaranJoshi:/mnt/c/Users/Karan Joshi/Desktop/devops-lab$ make frontend-dev
+cd frontend && npm install && npm run dev
+WSL 1 is not supported. Please upgrade to WSL 2 or above.
+Could not determine Node.js install directory
+make: *** [Makefile:17: frontend-dev] Error 1
+```
+
+steps -
+
+```bash
+sudo apt install -y curl
+
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" 
+
+nvm install 22
+```
+
+### Since Java and Node both hit this, check the rest of your tools the same way: which java mvn node npm docker. Everything except docker should resolve to a Linux path (/usr/... or ~/.nvm/...). docker is expected to show the Docker Desktop integration, so a path in /usr/bin or similar is fine.
+
+### Move the project into the Linux filesystem
+
+```bash
+cp -r "/mnt/c/Users/Karan Joshi/Desktop/devops-lab" ~/devops-lab
+cd ~/devops-lab
+```
