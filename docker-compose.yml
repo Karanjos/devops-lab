@@ -105,7 +105,7 @@ services:
     depends_on:
       - backend
     environment:
-      BACKEND_HOST: backend:8080
+      BACKEND_HOST: backend:8088
     ports:
       - "8080:80"       # open http://localhost:8080
 
