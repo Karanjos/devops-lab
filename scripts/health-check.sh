@@ -42,15 +42,14 @@ log "1/5 checking nginx health"
 checkhealth "nginx /healthz" curl -fs "$BASE_URL/healthz"
 
 log "2/5 checking API health"
-if checkhealth "API /api/actuator/health" curl -fs "$BASE_URL/api/actuator/health"; then
-    status_line="$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/actuator/health")"
-    if [[ "$status_line" == "200" ]]; then
-        success "API health check returned 200 OK"
-        results+=("PASS API health check returned 200 OK")
-    else
-        error "API health check returned $status_line"
-        results+=("FAIL API health check returned $status_line")
-    fi
+checkhealth "API /api/actuator/health" curl -fs "$BASE_URL/api/actuator/health"
+status_line="$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/actuator/health")"
+if [[ "$status_line" == "200" ]]; then
+    success "API health check returned 200 OK"
+    results+=("PASS API health check returned 200 OK")
+else
+    error "API health check returned $status_line"
+    results+=("FAIL API health check returned $status_line")
 fi
 
 log "3/5 checking postgres health"
