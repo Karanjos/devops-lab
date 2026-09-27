@@ -3,7 +3,7 @@
 # read it, then extend it (see docs/phase-2). Requires: curl, jq, docker compose.
 set -euo pipefail
 
-BASE_URL="${BASE_URL:-http://localhost:8080}"
+BASE_URL="${BASE_URL:-http://localhost:8088}"
 CONNECT_URL="${CONNECT_URL:-http://localhost:8083}"
 CONNECTOR="${CONNECTOR:-orders-jdbc-sink}"
 TRIES="${TRIES:-30}"
