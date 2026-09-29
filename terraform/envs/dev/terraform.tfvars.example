@@ -1,0 +1,10 @@
+# Copy this file to terraform.tfvars (git-ignored) and fill in real values.
+# Never commit terraform.tfvars itself.
+
+project_id = "devops-lab-yourname"
+
+# Find yours with: curl -s ifconfig.me
+allowed_ssh_ip = "REPLACE.WITH.YOUR.IP/32"
+
+ssh_user       = "yourlinuxusername"
+ssh_public_key = "ssh-ed25519 AAAA... your-email@example.com"

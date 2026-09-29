@@ -5,9 +5,13 @@ dist/
 
 # secrets and local state: never commit these
 .env
+.terraform/
 *.tfstate
 *.tfstate.*
-.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+tfplan
+*.tfplan
 *.tfvars
 !*.tfvars.example
 ansible/**/vault-pass*
@@ -23,3 +27,4 @@ application_default_credentials.json
 .vscode/
 *.iml
 .DS_Store
+*Zone.Identifier
