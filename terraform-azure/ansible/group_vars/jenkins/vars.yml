@@ -1,0 +1,20 @@
+jenkins_port: 8080
+jenkins_home: /var/lib/jenkins
+jenkins_admin_user: admin
+jenkins_admin_password: "{{ vault_jenkins_admin_password }}"   # see vault.yml in this same folder
+jenkins_executors: 2
+
+jenkins_plugins:
+  - git
+  - workflow-aggregator      # the Pipeline plugin suite - Jenkinsfile support, Phase 6
+  - docker-workflow
+  - credentials-binding
+  - matrix-auth
+  - pipeline-stage-view
+  - timestamper
+  - ws-cleanup
+  - ansicolor
+  - junit
+
+ufw_extra_allow_ports:
+  - "{{ jenkins_port }}"

@@ -1,0 +1,30 @@
+---
+# Two VMs now, not three: app-vm runs the dockerized stack, jenkins-vm is both the Jenkins
+# controller and its own build agent (no separate SSH agent, no agent keypair, no init
+# script registering a node - the controller just builds its own jobs using its built-in
+# node's executors).
+#
+# Order within the jenkins play matters: docker and maven must apply before jenkins, because
+# the jenkins role adds the "jenkins" user to the "docker" group (needs the group to exist)
+# and reads maven_install_dir for the systemd PATH override (needs the var to already be set).
+
+- name: Baseline every VM
+  hosts: all
+  become: true
+  roles:
+    - common
+
+- name: App VM - Docker, to run the stack via docker-compose
+  hosts: app
+  become: true
+  roles:
+    - docker
+
+- name: Jenkins VM - Java, Docker, Maven, then Jenkins itself (controller + its own agent)
+  hosts: jenkins
+  become: true
+  roles:
+    - java
+    - docker
+    - maven
+    - jenkins

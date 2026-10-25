@@ -1,0 +1,8 @@
+app_port: 8088
+ufw_extra_allow_ports:
+  - "{{ app_port }}"
+
+# Where docker-compose.yml and the rest of the Phase 2 stack gets checked out / copied to.
+# This role only installs Docker; deploying the actual app is scripts/deploy.sh's job (Phase 3),
+# run by hand or from Jenkins (Phase 6), not by Ansible.
+app_deploy_path: /opt/devops-lab
