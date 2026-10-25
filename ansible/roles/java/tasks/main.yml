@@ -1,0 +1,14 @@
+---
+- name: Install OpenJDK {{ java_version }}
+  ansible.builtin.apt:
+    name: "{{ java_package }}"
+    state: present
+    update_cache: true
+  tags: [java]
+
+- name: Confirm java is on PATH
+  ansible.builtin.command: java -version
+  register: java_version_check
+  changed_when: false
+  tags: [java]
+  

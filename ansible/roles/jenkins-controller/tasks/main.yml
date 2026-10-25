@@ -1,0 +1,157 @@
+---
+- name: Add the Jenkins apt key
+  ansible.builtin.get_url:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    dest: /usr/share/keyrings/jenkins-keyring.asc
+    mode: '0644'
+  tags: [jenkins]
+
+- name: Add the Jenkins apt repository (LTS)
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+    state: present
+    filename: jenkins
+  tags: [jenkins]
+
+- name: Install Jenkins LTS
+  ansible.builtin.apt:
+    name: jenkins
+    state: present
+    update_cache: true
+  tags: [jenkins]
+
+- name: Stop Jenkins before seeding the frist boot config
+  ansible-builtin.service:
+    name: jenkins
+    state: stopped
+  tags: [jenkins]
+
+- name: Create init.groovy.d
+  ansible.builtin.file:
+    path: "{{ jenkins_home }}/init.groovy.d"
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: '0755'
+  tags: [jenkins]
+
+- name: Seed the admin user and skip the setup wizard
+  ansible.builtin.template:
+    src: basic-security.groovy.j2
+    dest: "{{ jenkins_home }}/init.groovy.d/01-basic-security-groovy"
+    owner: jenkins
+    group: jenkins
+    mode: '0600'
+  tags: [jenkins]
+
+- name: Override the systemd unit so the setup wizard never runs
+  ansible.builtin.template:
+    src: system-override.conf.j2
+    dest: /etc/systemd/system/jenkins.service.d/override.conf
+    mode: '0644'
+  notify: Reload systemd
+  tags: [jenkins]
+
+- name: Apply the systemd override now, before the first start
+  ansible.builtin.meta: flush_handlers
+  tags: [jenkins]
+
+- name: Start Jenkins with the seeded admin user
+  ansible.builtin.service:
+    name: jenkins
+    state: started
+    enbaled: true
+  tags: [jenkins]
+
+- name: Wait for Jenkins HTTP to come up
+  ansible.builtin.uri:
+    url: "http://localhost:{{ jenkins_port }}/login"
+    status_code: 200
+  register: jenkins_http
+  until: jenkins_http.status == 200
+  retries: 30
+  delay: 5
+  tags: [jenkins]
+
+- name: Install the plugin list (idempotent - a second run reports changed=0)
+  community.general.jenkins_plugin:
+    name: "{{ item }}"
+    url_username: "{{ jenkins_admin_user }}"
+    url_password: "{{ jenkins_admin_password }}"
+    jenkins_home: "{{ jenkins_home }}"
+    state: present
+  loop: "{{ jenkins_plugins }}"
+  register: plugin_install
+  tags: [jenkins, jenkins_plugins]
+
+- name: Restart Jenkins so any newly installed plugins actually load
+  ansible.builtin.service:
+    name: jenkins
+    state: restarted
+  when: plugin_install.results | selectattr('changed') | list | length > 0
+  tags: [jenkins, jenkins_plugins]
+
+- name: Wait for Jenkins HTTP to come back up after the plugin restart
+  ansible.builtin.uri:
+    url: "http://localhost:{{ jenkins_port }}/login"
+    status_code: 200
+  register: jenkins_http
+  until: jenkins_http.status == 200
+  retries: 30
+  delay: 5
+  tags: [jenkins]
+
+- name: Generate the SSH keypair the controller uses to reach agents
+  community.crypto.openssh_keypair:
+    path: "{{ jenkins_agent_key_path }}"
+    type: ed25519
+    owner: jenkins
+    group: jenkins
+    mode: '0600'
+  tags: [jenkins, jenkins_agent_ssh]
+
+- name: Read the generated public key back
+  ansible.builtin.slurp:
+    src: "{{ jenkins_agent_key_path }}.pub"
+  register: jenkins_agent_pubkey_raw
+  tags: [jenkins, jenkins_agent_ssh]
+
+- name: Read the generated private key back
+  ansible.builtin.slurp:
+    src: "{{ jenkins_agent_key_path }}"
+  register: jenkins_agent_privkey_raw
+  no_log: true
+  tags: [jenkins, jenkins_agent_ssh]
+
+- name: Expose the keys as facts for the jenkins_agent role's play, later in this same run
+  ansible.builtin.set_fact:
+    jenkins_agent_ssh_public_key: "{{ jenkins_agent_pubkey_raw.content | b64decode }}"
+    jenkins_agent_ssh_private_key: "{{ jenkins_agent_privkey_raw.content | b64decode }}"
+    cacheable: true
+  no_log: true
+  tags: [jenkins, jenkins_agent_ssh]
+
+- name: Seed the agent node + credential definitions
+  ansible.builtin.template:
+    src: add-agent-node.groovy.j2
+    dest: "{{ jenkins_home }}/init.groovy.d/02-add-agent-nodes.groovy"
+    owner: jenkins
+    group: jenkins
+    mode: '0600'
+  tags: [jenkins, jenkins_agent_ssh]
+
+- name: Restart Jenkins so it registers the agent node(s)
+  ansible.builtin.service:
+    name: jenkins
+    state: restarted
+  tags: [jenkins, jenkins_agent_ssh]
+
+- name: Wait for Jenkins HTTP to come back up after registering agents
+  ansible.builtin.uri:
+    url: "http://localhost:{{ jenkins_port }}/login"
+    status_code: 200
+  register: jenkins_http_final
+  until: jenkins_http_final.status == 200
+  retries: 30
+  delay: 5
+  tags: [jenkins, jenkins_agent_ssh]

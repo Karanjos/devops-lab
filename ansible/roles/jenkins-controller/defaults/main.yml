@@ -1,0 +1,6 @@
+jenkins_port: 8080
+jenkins_home: /var/lib/jenkins
+jenkins_admin_user: admin
+jenkins_agent_key_path: "{{ jenkins_home }}/.ssh/agent_key"
+jenkins_agent_remote_user: jenkins
+jenkins_plugins: []
