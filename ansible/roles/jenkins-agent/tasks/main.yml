@@ -1,0 +1,33 @@
+---
+- name: Create the jenkins service user on the agent
+  ansible.builtin.user:
+    name: "{{ jenkins_agent_user }}"
+    shell: /bin/bash
+    create_home: true
+    groups: docker
+    append: true
+  tags: [jenkins_agent]
+
+- name: Create the agent's remote root directory (where Jenkins checks out and builds)
+  ansible.builtin.file:
+    path: "{{ jenkins_agent_remote_root }}"
+    state: present
+    owner: "{{ jenkins_agent_user }}"
+    group: "{{ jenkins_agent_user }}"
+    mode: '0755'
+  tags: [jenkins_agent]
+
+- name: Create .ssh for the jenkins user
+  ansible.builtin.file:
+    path: "{{ jenkins_agent_home }}/.ssh"
+    state: directory
+    owner: "{{ jenkins_agent_user }}"
+    group: "{{ jenkins_agent_user }}"
+    mode: '0700'
+  tags: [jenkins_agent]
+
+- name: Authorize the controller's generated key for the jenkins user
+  ansible.posix.authorized_key:
+    user: "{{ jenkins_agent_user }}"
+    key: "{{ hostvars[groups['jenkins_controller'][0]]['jenkins_agent_ssh_public_key'] }}"
+  tags: [jenkins_agent]

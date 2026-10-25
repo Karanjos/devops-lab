@@ -5,14 +5,24 @@ dist/
 
 # secrets and local state: never commit these
 .env
+.terraform/
 *.tfstate
 *.tfstate.*
-.terraform/
-*.tfvars
-!*.tfvars.example
+*.tfplan
+.terraform.lock.hcl
+tfplan
+terraform.tfvars
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
 ansible/**/vault-pass*
 *.pem
 *.key
+*.retry
+.vault_pass.txt
+*_key.pub
 # GCP service-account keys and credentials
 *-key.json
 credentials*.json
@@ -23,3 +33,4 @@ application_default_credentials.json
 .vscode/
 *.iml
 .DS_Store
+*Zone.Identifier

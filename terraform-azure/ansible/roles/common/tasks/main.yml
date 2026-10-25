@@ -1,0 +1,66 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  tags: [common, packages]
+
+- name: Install baseline packages
+  ansible.builtin.apt:
+    name: "{{ common_packages }}"
+    state: present
+  tags: [common, packages]
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ timezone }}"
+  tags: [common]
+
+- name: Ensure the deploy user exists with a home directory
+  ansible.builtin.user:
+    name: "{{ deploy_user }}"
+    shell: /bin/bash
+    create_home: true
+    state: present
+  tags: [common, users]
+
+- name: Harden SSH - disable password authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    validate: 'sshd -t -f %s'
+  notify: Restart ssh
+  tags: [common, ssh]
+
+- name: Harden SSH - disable root login
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PermitRootLogin'
+    line: 'PermitRootLogin no'
+    validate: 'sshd -t -f %s'
+  notify: Restart ssh
+  tags: [common, ssh]
+
+- name: Allow SSH through ufw
+  community.general.ufw:
+    rule: allow
+    port: "{{ ssh_port }}"
+    proto: tcp
+  tags: [common, firewall]
+
+- name: Allow this host's extra ports through ufw
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop: "{{ ufw_extra_allow_ports }}"
+  tags: [common, firewall]
+
+# Default-deny on top of the Azure NSG, not instead of it - two independent layers, so a
+# mistake in one doesn't leave the VM wide open.
+- name: Enable ufw with a default-deny policy
+  community.general.ufw:
+    state: enabled
+    policy: deny
+  tags: [common, firewall]

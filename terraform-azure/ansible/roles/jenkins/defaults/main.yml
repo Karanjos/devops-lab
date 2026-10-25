@@ -1,0 +1,5 @@
+jenkins_port: 8080
+jenkins_home: /var/lib/jenkins
+jenkins_admin_user: admin
+jenkins_executors: 2   # this box is both controller and agent now - builds run right here
+jenkins_plugins: []

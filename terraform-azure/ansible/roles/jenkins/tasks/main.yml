@@ -1,0 +1,118 @@
+---
+# This role expects docker and maven to have already run on this host in the same play
+# (see playbooks/site.yml) - it depends on the "docker" group existing and on
+# maven_install_dir for the systemd PATH override below.
+
+- name: Add the Jenkins apt key
+  ansible.builtin.get_url:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    dest: /usr/share/keyrings/jenkins-keyring.asc
+    mode: '0644'
+  tags: [jenkins]
+
+- name: Add the Jenkins apt repository (LTS)
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+    state: present
+    filename: jenkins
+  tags: [jenkins]
+
+- name: Install Jenkins LTS
+  ansible.builtin.apt:
+    name: jenkins
+    state: present
+    update_cache: true
+  tags: [jenkins]
+
+- name: Stop Jenkins before seeding the first-boot config
+  ansible.builtin.service:
+    name: jenkins
+    state: stopped
+  tags: [jenkins]
+
+# The apt package creates a "jenkins" system user. It needs to be in "docker" so pipeline
+# steps (docker-workflow plugin, or a raw `docker build`) can talk to the Docker socket
+# without sudo - the docker role must already have run on this host for this group to exist.
+- name: Add the jenkins user to the docker group
+  ansible.builtin.user:
+    name: jenkins
+    groups: docker
+    append: true
+  tags: [jenkins]
+
+- name: Create init.groovy.d
+  ansible.builtin.file:
+    path: "{{ jenkins_home }}/init.groovy.d"
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: '0755'
+  tags: [jenkins]
+
+- name: Seed the admin user, executor count, and skip the setup wizard
+  ansible.builtin.template:
+    src: basic-security.groovy.j2
+    dest: "{{ jenkins_home }}/init.groovy.d/01-basic-security.groovy"
+    owner: jenkins
+    group: jenkins
+    mode: '0600'
+  tags: [jenkins]
+
+- name: Override the systemd unit - skip the setup wizard, put Maven on PATH
+  ansible.builtin.template:
+    src: systemd-override.conf.j2
+    dest: /etc/systemd/system/jenkins.service.d/override.conf
+    mode: '0644'
+  notify: Reload systemd
+  tags: [jenkins]
+
+- name: Apply the systemd override now, before the first start
+  ansible.builtin.meta: flush_handlers
+  tags: [jenkins]
+
+# Restarting (not just starting) here picks up the new "docker" group membership from
+# above too - group changes only take effect for processes started after the change.
+- name: Start Jenkins with the seeded admin user and new group membership
+  ansible.builtin.service:
+    name: jenkins
+    state: restarted
+    enabled: true
+  tags: [jenkins]
+
+- name: Wait for Jenkins HTTP to come up
+  ansible.builtin.uri:
+    url: "http://localhost:{{ jenkins_port }}/login"
+    status_code: 200
+  register: jenkins_http
+  until: jenkins_http.status == 200
+  retries: 30
+  delay: 5
+  tags: [jenkins]
+
+- name: Install the plugin list (idempotent - a second run reports changed=0)
+  community.general.jenkins_plugin:
+    name: "{{ item }}"
+    url_username: "{{ jenkins_admin_user }}"
+    url_password: "{{ jenkins_admin_password }}"
+    jenkins_home: "{{ jenkins_home }}"
+    state: present
+  loop: "{{ jenkins_plugins }}"
+  register: plugin_install
+  tags: [jenkins, jenkins_plugins]
+
+- name: Restart Jenkins so any newly installed plugins actually load
+  ansible.builtin.service:
+    name: jenkins
+    state: restarted
+  when: plugin_install.results | selectattr('changed') | list | length > 0
+  tags: [jenkins, jenkins_plugins]
+
+- name: Wait for Jenkins HTTP to come back up after the plugin restart
+  ansible.builtin.uri:
+    url: "http://localhost:{{ jenkins_port }}/login"
+    status_code: 200
+  register: jenkins_http_after_plugins
+  until: jenkins_http_after_plugins.status == 200
+  retries: 30
+  delay: 5
+  tags: [jenkins, jenkins_plugins]

@@ -1,0 +1,51 @@
+import jenkins.model.*
+import hudson.model.*
+import hudson.slaves.*
+import hudson.plugins.sshslaves.*
+import com.cloudbees.plugins.credentials.*
+import com.cloudbees.plugins.credentials.domains.*
+import com.cloudbees.plugins.credentials.impl.BasicSSHUserPrivateKey
+
+def instance = jenkins.getInstance()
+def credId = "jenkins-agent-ssh-key"
+
+def existingCred = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+    com.cloudbees.plugins.credentials.common.StandardUsernameCredentials.class, instance, null, null
+).find { it.id == credsId }
+
+if (existingCred == null) {
+    def privateKeySource = new BasicSSHUserPrivateKey.DirectEntryPrivateKeySource(
+        '''{{ jenkins_agent_ssh_private_key }}'''
+    )
+    def creds = new BasicSSHUserPrivateKey(
+        CredentialsScope.SYSTEM,
+        credsId,
+        "{{ jenkins_agent_remote_user }}",
+        privateKeySource,
+        "",
+        "SSH key Ansible generated for the controller to reach build agents"
+    )
+    def store = instance.getExtensionList(com.cloudbees.plugins.credentials.SystemCredentialsProvider.class)[0].getStore()
+    store.addCredentials(Domain.global(), creds)
+}
+
+{% for host in groups['jenkins_agents'] %}
+if (instance.getNode("{{ host }}") == null) {
+    def launcher = new SSHLauncher(
+        "{{ hostvars[host].private_ip | default(hostvars[host].ansible_host) }}",
+        22,
+        credsId
+    )
+    def agentNode = new DumbSlave(
+        "{{ host }}",
+        "{{ hostvars[host].jenkins_agent_remote_root | default('/home/jenkins/agent') }}",
+        launcher
+    )
+    agentNode.setNumExecutors(2)
+    agentNode.setMode(Node.Mode.NORMAL)
+    agentNode.setLabelString("docker maven")
+    instance.addNode(agentNode)
+}
+{% endfor %}
+
+instance.save()

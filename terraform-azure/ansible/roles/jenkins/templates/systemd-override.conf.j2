@@ -1,0 +1,6 @@
+[Service]
+Environment="JAVA_OPTS=-Djenkins.install.runSetupWizard=false"
+# Jenkins is started by systemd, not a login shell, so /etc/profile.d/maven.sh (the maven
+# role's PATH change) never applies to it. Without this, a pipeline step that just calls
+# `mvn` fails with "not found" even though `mvn -version` works fine over SSH as the same user.
+Environment="PATH={{ maven_install_dir | default('/opt/maven') }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"

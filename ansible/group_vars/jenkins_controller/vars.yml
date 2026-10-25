@@ -1,0 +1,24 @@
+jenkins_port: 8080
+jenkins_home: /var/lib/jenkins
+jenkins_admin_user: admin
+jenkins_admin_password: "{{ vault_jenkins_admin_password }}"   # see vault.yml in this same folder
+
+jenkins_agent_key_path: "{{ jenkins_home }}/.ssh/agent_key"
+jenkins_agent_remote_user: "{{ jenkins_agent_user }}"            # from group_vars/jenkins_agents.yml
+jenkins_agent_remote_root: "{{ hostvars[groups['jenkins_agents'][0]]['jenkins_agent_remote_root'] }}"
+
+jenkins_plugins:
+  - git
+  - workflow-aggregator      # the Pipeline plugin suite - Jenkinsfile support, Phase 6
+  - docker-workflow
+  - ssh-slaves                # SSHLauncher - how the controller starts the agent process
+  - credentials-binding
+  - matrix-auth
+  - pipeline-stage-view
+  - timestamper
+  - ws-cleanup
+  - ansicolor
+  - junit
+
+ufw_extra_allow_ports:
+  - "{{ jenkins_port }}"

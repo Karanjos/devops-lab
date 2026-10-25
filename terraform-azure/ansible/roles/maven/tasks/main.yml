@@ -1,0 +1,30 @@
+---
+- name: "Download and unpack Maven {{ maven_version }}"
+  ansible.builtin.unarchive:
+    src: "https://dlcdn.apache.org/maven/maven-3/{{ maven_version }}/binaries/apache-maven-{{ maven_version }}-bin.tar.gz"
+    dest: /opt
+    remote_src: true
+    creates: "/opt/apache-maven-{{ maven_version }}"
+  tags: [maven]
+
+- name: Symlink /opt/maven to the versioned install
+  ansible.builtin.file:
+    src: "/opt/apache-maven-{{ maven_version }}"
+    dest: "{{ maven_install_dir }}"
+    state: link
+  tags: [maven]
+
+- name: Put Maven on PATH for every user (build steps run as the jenkins user)
+  ansible.builtin.copy:
+    dest: /etc/profile.d/maven.sh
+    content: |
+      export M2_HOME={{ maven_install_dir }}
+      export PATH=$PATH:{{ maven_install_dir }}/bin
+    mode: '0644'
+  tags: [maven]
+
+- name: Confirm mvn is runnable
+  ansible.builtin.command: "{{ maven_install_dir }}/bin/mvn -version"
+  register: maven_version_check
+  changed_when: false
+  tags: [maven]
