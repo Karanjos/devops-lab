@@ -1,0 +1,16 @@
+timezone: Asia/Kolkata
+
+common_packages:
+  - curl
+  - wget
+  - git
+  - unzip
+  - ca-certificates
+  - gnupg
+  - lsb-release
+  - ufw
+  - fail2ban
+
+ssh_port: 22
+
+ufw_ectra_allow_ports: []

@@ -1,5 +1,0 @@
----
-- name: Restart ssh
-  ansible.builtin.service:
-    name: ssh   # Ubuntu's unit is "ssh", not "sshd" - the binary is sshd, the unit isn't
-    state: restarted

@@ -1,6 +1,0 @@
----
-# Install with: ansible-galaxy collection install -r requirements.yml
-collections:
-  - name: community.general   # ufw, timezone, jenkins_plugin modules
-  - name: community.crypto    # openssh_keypair module
-  - name: ansible.posix       # authorized_key module

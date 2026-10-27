@@ -1,0 +1,45 @@
+- name: Baseline every VM
+  hosts: all
+  become: true
+  roles:
+    - common
+
+- name: App VM - Docker, to run the stack via docker-compose
+  hosts: app
+  become: true
+  roles:
+    - docker
+
+- name: Jenkins VM - Java, Docker, Maven, then Jenkins itself (controller + its own agent)
+  hosts: jenkins
+  become: true
+  roles:
+    - java
+    - docker
+    - maven
+    - jenkins
+
+# - name: Jenkins hosts - Java runtime (needed by both the controller and the agent)
+#   hosts: jenkins
+#   become: true
+#   roles:
+#     - java 
+
+# - name: Jenkins agent - Docker + Maven, where builds actually run
+#   hosts: jenkins_agents
+#   become: true
+#   roles:
+#     - docker
+#     - maven
+
+# - name: Jenkins controller - install Jenkins, seed admin + plugins + agent node definitions
+#   hosts: jenkins_controller
+#   become: true
+#   roles:
+#     - jenkins_controller
+
+# - name: Jenkins agent - authorize the controller's generated key (must run AFTER the controller play above)
+#   hosts: jenkins_agents
+#   become: true
+#   roles:
+#     - jenkins_agent
