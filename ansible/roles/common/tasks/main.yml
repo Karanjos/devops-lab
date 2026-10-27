@@ -6,7 +6,7 @@
   tags: [common, packages]
 
 - name: Install baseline packages
-  ansible-builtin.apt:
+  ansible.builtin.apt:
     name: "{{ common_packages }}"
     state: present
   tags: [common, packages]
@@ -27,18 +27,18 @@
 - name: Harden SSH - disable password authentication
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^#?PasswordAuthentication'
-    line: 'PasswordAuthentication no'
-    validate: 'sshd -t -f %s'
+    regexp: "^#?PasswordAuthentication"
+    line: "PasswordAuthentication no"
+    validate: "sshd -t -f %s"
   notify: Restart ssh
   tags: [common, ssh]
 
 - name: Harden SSH - disable root login
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^#?PermitRootLogin'
-    line: 'PermitRootLogin no'  
-    validate: 'sshd -t -f %s'
+    regexp: "^#?PermitRootLogin"
+    line: "PermitRootLogin no"
+    validate: "sshd -t -f %s"
   notify: Restart ssh
   tags: [common, ssh]
 
@@ -48,7 +48,7 @@
     port: "{{ ssh_port }}"
     proto: tcp
   tags: [common, firewall]
-  
+
 - name: Allow this host's extra ports through ufw
   community.general.ufw:
     rule: allow

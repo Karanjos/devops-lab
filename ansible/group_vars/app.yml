@@ -1,5 +1,0 @@
-app_port: 8080
-ufw_extra_allow_ports:
-  - "{{ app_port }}"
-
-app_deploy_path: /opt/devops_lab

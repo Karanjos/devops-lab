@@ -5,9 +5,9 @@
 
 - name: Add the Jenkins apt key
   ansible.builtin.get_url:
-    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
     dest: /usr/share/keyrings/jenkins-keyring.asc
-    mode: '0644'
+    mode: "0644"
   tags: [jenkins]
 
 - name: Add the Jenkins apt repository (LTS)
@@ -46,7 +46,7 @@
     state: directory
     owner: jenkins
     group: jenkins
-    mode: '0755'
+    mode: "0755"
   tags: [jenkins]
 
 - name: Seed the admin user, executor count, and skip the setup wizard
@@ -55,14 +55,14 @@
     dest: "{{ jenkins_home }}/init.groovy.d/01-basic-security.groovy"
     owner: jenkins
     group: jenkins
-    mode: '0600'
+    mode: "0600"
   tags: [jenkins]
 
 - name: Override the systemd unit - skip the setup wizard, put Maven on PATH
   ansible.builtin.template:
     src: systemd-override.conf.j2
     dest: /etc/systemd/system/jenkins.service.d/override.conf
-    mode: '0644'
+    mode: "0644"
   notify: Reload systemd
   tags: [jenkins]
 

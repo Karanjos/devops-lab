@@ -1,5 +1,5 @@
 ---
 collections:
-  - name: community.general   # ufw, timezone, jenkins_plugin modules
-  - name: community.crypto    # openssh_keypair module
-  - name: ansible-posix       # authorized_key module
+  - name: community.general # ufw, timezone, jenkins_plugin modules
+  - name: community.crypto # openssh_keypair module
+  - name: ansible.posix # authorized_key module
