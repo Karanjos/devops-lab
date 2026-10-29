@@ -10,7 +10,7 @@
   roles:
     - docker
 
-- name: Jenkins VM - Java, Docker, Maven, then Jenkins itself (controller + its own agent)
+- name: Jenkins VM - Java, Docker, Maven, AZ cli, then Jenkins itself (controller + its own agent)
   hosts: jenkins
   become: true
   roles:
@@ -18,12 +18,12 @@
     - docker
     - maven
     - jenkins
-
+    - azure-cli
 # - name: Jenkins hosts - Java runtime (needed by both the controller and the agent)
 #   hosts: jenkins
 #   become: true
 #   roles:
-#     - java 
+#     - java
 
 # - name: Jenkins agent - Docker + Maven, where builds actually run
 #   hosts: jenkins_agents
