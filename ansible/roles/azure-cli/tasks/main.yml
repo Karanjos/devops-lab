@@ -1,0 +1,46 @@
+---
+- name: Add the Microsoft key
+  ansible.builtin.get_url:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    dest: /usr/share/keyrings/microsoft.asc
+    mode: "0644"
+  tags: [azure-cli]
+
+- name: Convert the ASC key into GPG format
+  ansible.builtin.command:
+    cmd: gpg --dearmor --yes --output /usr/share/keyrings/microsoft.gpg /usr/share/keyrings/microsoft.asc
+  args:
+    creates: /usr/share/keyrings/microsoft.gpg
+  tags: [azure-cli]
+
+- name: Change the permission of gpg file
+  ansible.builtin.file:
+    path: /usr/share/keyrings/microsoft.gpg
+    mode: "0644"
+  tags: [azure-cli]
+
+- name: Add the apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ {{ ansible_distribution_release }} main"
+    state: present
+    filename: azure-cli
+  tags: [azure-cli]
+
+- name: Install Azure-CLI
+  ansible.builtin.apt:
+    name: azure-cli
+    state: present
+    update_cache: true
+  tags: [azure-cli]
+
+- name: Verify Azure-CLI installation
+  ansible.builtin.command:
+    cmd: az version
+  register: azure_cli_version
+  changed_when: false
+  tags: [azure-cli]
+
+- name: Display Azure-CLI version
+  ansible.builtin.debug:
+    var: azure_cli_version.stdout
+  tags: [azure-cli]
