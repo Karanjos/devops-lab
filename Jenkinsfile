@@ -34,27 +34,34 @@ pipeline {
                 }
             }
         }
-
+        
+        
         stage('Backend: verify and test') {
             steps {
                 sh '''
                     set -eu
                     mkdir -p .m2
+
                     docker run --rm \
                       --user "$(id -u):$(id -g)" \
+                      -e HOME=/tmp \
                       -v "$WORKSPACE/backend:/workspace" \
                       -v "$WORKSPACE/.m2:/maven-cache" \
                       -w /workspace \
                       maven:3.9-eclipse-temurin-21 \
-                      -B -Dmaven.repo.local=/maven-cache/repository verify
+                      mvn -B -Dmaven.repo.local=/maven-cache/repository verify
                 '''
             }
             post {
                 always {
-                    junit(testResults: 'backend/target/surefire-reports/TEST-*.xml', allowEmptyResults: true)
+                    junit(
+                        testResults: 'backend/target/surefire-reports/TEST-*.xml',
+                        allowEmptyResults: true
+                    )
                 }
             }
         }
+
 
         stage('Frontend: install and build') {
             steps {
