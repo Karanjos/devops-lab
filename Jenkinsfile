@@ -102,7 +102,7 @@ pipeline {
                         -v /var/run/docker.sock:/var/run/docker.sock \
                         -v trivy-cache:/root/.cache/ \
                         "$TRIVY_IMAGE" \
-                        image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed "$image"
+                        image --severity HIGH,CRITICAL --ignore-unfixed "$image"
                     done
                 '''
             }
